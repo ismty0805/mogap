@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="description"
+    content="Motion-Guided Asymmetric Prediction (MoGAP): a visual prediction task that adapts video models for robot control by predicting heavily corrupted dynamic regions from less corrupted static context.">
+  <meta name="keywords"
+    content="MoGAP, World Action Model, WAM, Video Diffusion, Robot Learning, Visual Prediction, Manipulation">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Adapting Video Models for Robot Control via Motion-guided Asymmetric Prediction</title>
+
+  <meta property="og:title" content="Adapting Video Models for Robot Control via Motion-guided Asymmetric Prediction" />
+  <meta property="og:description"
+    content="MoGAP focuses visual supervision of World Action Models on dynamic regions, improving policy performance across WAM architectures and on a real humanoid robot." />
+  <meta property="og:image" content="./static/images/method.png" />
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro" rel="stylesheet">
+
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-slider.min.css">
+  <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+  <link rel="icon" href="./static/images/favicon.svg">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script defer src="./static/js/fontawesome.all.min.js"></script>
+  <script src="./static/js/bulma-carousel.min.js"></script>
+  <script src="./static/js/bulma-slider.min.js"></script>
+  <script src="./static/js/index.js"></script>
+</head>
+
+<body>
+
+
+  <section class="hero">
+    <div class="hero-body" style="padding-bottom:1rem;">
+      <div class="container is-max-desktop">
+        <div class="columns is-centered">
+          <div class="column has-text-centered">
+            <h1 class="title is-2 publication-title">Adapting Video Models for Robot Control via
+              Motion-guided Asymmetric Prediction</h1>
+            <div class="is-size-5 publication-authors">
+              <span class="author-block">
+                <a href="https://ismty0805.github.io">Taeyoung Kim</a><sup>1</sup>,</span>
+              <span class="author-block">
+                <a href="https://joonyeongs.github.io/">Junyoung Sung</a><sup>1</sup>,</span>
+              <span class="author-block">
+                <a href="https://arunos728.github.io/">Heeseung Kwon</a><sup>2</sup>,</span>
+              <span class="author-block">
+                <a href="https://www.linkedin.com/in/minseop-kim-255ba02b2/?locale=en">Minseop Kim</a><sup>2</sup>,</span>
+              <span class="author-block">
+                <a href="https://alinlab.kaist.ac.kr/shin.html">Jinwoo Shin</a><sup>1,2</sup></span>
+            </div>
+
+            <div class="is-size-5 publication-authors">
+              <span class="author-block"><sup>1</sup>KAIST,</span>
+              <span class="author-block"><sup>2</sup>RLWRLD</span>
+            </div>
+
+            <div class="column has-text-centered">
+              <div class="publication-links">
+                <!-- arXiv Link (disabled). -->
+                <span class="link-block">
+                  <a class="external-link button is-normal is-rounded is-dark" style="cursor:default; opacity:0.65;"
+                    disabled>
+                    <span class="icon">
+                      <i class="ai ai-arxiv"></i>
+                    </span>
+                    <span>arXiv</span>
+                  </a>
+                </span>
+                <!-- Code Link (Coming Soon). -->
+                <span class="link-block">
+                  <a class="external-link button is-normal is-rounded is-dark" style="cursor:default; opacity:0.65;"
+                    disabled>
+                    <span class="icon">
+                      <i class="fab fa-github"></i>
+                    </span>
+                    <span>Code (Coming Soon)</span>
+                  </a>
+                </span>
+                <!-- Checkpoints Link (Coming Soon). -->
+                <span class="link-block">
+                  <a class="external-link button is-normal is-rounded is-dark" style="cursor:default; opacity:0.65;"
+                    disabled>
+                    <span class="icon">&#129303;</span>
+                    <span>Checkpoints (Coming Soon)</span>
+                  </a>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="hero teaser">
+    <div class="container is-max-desktop">
+      <div class="hero-body" style="padding-top:0; padding-bottom:0;">
+        <div
+          style="background:#eaf2fb; border-left:5px solid #3273dc; border-radius:8px; padding:1.1rem 1.4rem; margin-bottom:0;">
+          <p style="font-size:1.05rem; line-height:1.6; margin:0; text-align:left;">
+            <b style="color:#3273dc;">TL;DR:</b>
+            <b>Motion-Guided Asymmetric Prediction (MoGAP)</b> is a visual prediction task for World Action Models
+            that predicts heavily corrupted <i>dynamic</i> regions from less corrupted <i>static</i> context. It uses
+            motion cues from the training videos themselves, needs no external teacher or extra modality, and leaves
+            inference unchanged, while consistently improving policy performance across WAM architectures and on a
+            real humanoid robot.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="section" style="padding-top:1.5rem;">
+    <div class="container is-max-desktop">
+      <!-- Abstract. -->
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-four-fifths">
+          <h2 class="title is-3">Abstract</h2>
+          <div class="content has-text-justified">
+            <p>
+              World Action Models (WAMs) leverage pretrained video generative models for robotic control by jointly
+              predicting future visual observations and actions. The visual prediction objective plays a key role in
+              adapting pretrained video representations to the target robot domain. Yet standard visual prediction
+              inherited from video pretraining treats all visual regions uniformly, despite their differing relevance
+              to robotic control. We therefore investigate the spatial allocation of visual supervision in WAMs and
+              show that focusing supervision on dynamic regions can substantially improve policy performance. Building
+              on this finding, we introduce <i>Motion-Guided Asymmetric Prediction (MoGAP)</i>, which augments WAM
+              training with motion-focused visual prediction. MoGAP allocates noise asymmetrically across regions,
+              training the model to reconstruct more heavily corrupted dynamic regions using less corrupted static
+              regions as context. MoGAP is trained alongside standard video&ndash;action prediction through a
+              training-only auxiliary prediction path within the shared video diffusion backbone. It uses motion cues
+              derived directly from training videos, requiring neither an external teacher nor additional modalities.
+              Across robot manipulation benchmarks and WAM architectures, MoGAP consistently improves policy
+              performance, increasing success rates on the GR-1 tabletop benchmark from 38.8% to 47.5% for Fast-WAM
+              (Wan2.2-5B) and from 52.3% to 62.3% for Cosmos3-Nano. We further demonstrate MoGAP's effectiveness in
+              physical deployment through evaluation on a real humanoid robot.
+            </p>
+          </div>
+        </div>
+      </div>
+      <!--/ Abstract. -->
+    </div>
+  </section>
+
+
+  <section class="section" style="padding-top:0;">
+    <div class="container is-max-desktop">
+
+      <!-- Motivation. -->
+      <div class="columns is-centered">
+        <div class="column is-full-width">
+          <h2 class="title is-3">Motivation: not all regions matter equally for control</h2>
+          <div class="content has-text-justified">
+            <p>
+              Dynamic regions capture robot motion and object interactions, while static regions often hold visually
+              complex but control-irrelevant details such as tabletop textures. Simply reallocating a fixed visual
+              supervision budget toward dynamic regions already improves policy performance (Fast-WAM 38.8% &rarr;
+              41.8%, Cosmos3 52.3% &rarr; 57.7% on GR-1 Tabletop). MoGAP turns this insight into a dedicated
+              prediction task, yielding substantially larger gains.
+            </p>
+          </div>
+          <div class="content has-text-centered">
+            <img src="./static/images/motivation_figure.png" alt="Focusing visual supervision on task-relevant dynamics" />
+          </div>
+        </div>
+      </div>
+      <!--/ Motivation. -->
+
+      <!-- Method. -->
+      <div class="columns is-centered">
+        <div class="column is-full-width">
+          <h2 class="title is-3">Method</h2>
+          <div class="content has-text-justified">
+            <p>
+              <b>Motion-Guided Asymmetric Prediction (MoGAP)</b> treats dynamic regions as prediction targets and
+              static regions as scene context. It is built from three key components:
+            </p>
+            <ul>
+              <li><b>Latent motion scores</b> &mdash; computed from temporal differences between video latents already
+                available during training, requiring no optical-flow estimator or external teacher.</li>
+              <li><b>Asymmetric noise allocation</b> &mdash; dynamic regions receive higher noise levels while static
+                regions stay less corrupted, so the model must infer dynamic content from the remaining scene
+                context.</li>
+              <li><b>Training-only auxiliary path</b> &mdash; MoGAP tokens are processed in the shared video diffusion
+                backbone with an asymmetric attention mask, adding no parameters and omitted at inference.</li>
+            </ul>
+          </div>
+          <div class="content has-text-centered">
+            <img src="./static/images/method.png" alt="MoGAP overview" />
+          </div>
+        </div>
+      </div>
+      <!--/ Method. -->
+
+      <!-- Results. -->
+      <div class="columns is-centered">
+        <div class="column is-full-width">
+          <h2 class="title is-3">Results</h2>
+
+          <h3 class="title is-4">Real-robot manipulation</h3>
+          <div class="content has-text-justified">
+            <p>
+              On an OpenArm humanoid with two five-finger Inspire hands, MoGAP improves over the baseline across all
+              task groups, with the largest gains on out-of-domain tasks (average 40.6% &rarr; 74.0%). When the
+              target object is relocated during execution, the baseline keeps reaching for the old location, whereas
+              MoGAP redirects toward the moved object (45.8% &rarr; 87.5%), even though no relocation demonstrations
+              were seen during training.
+            </p>
+          </div>
+          <div class="content has-text-centered">
+            <img src="./static/images/object_relocation.png" alt="Object relocation task example" width="100%" />
+          </div>
+          <div class="content has-text-centered">
+            <img src="./static/images/openarm.png" alt="Real-robot results" width="95%" />
+          </div>
+
+          <h3 class="title is-4">Simulation benchmark</h3>
+          <div class="content has-text-justified">
+            <p>
+              On RoboCasa GR-1 Tabletop (24 humanoid manipulation tasks), MoGAP lifts Cosmos3 from 52.3% to 62.3%,
+              surpassing all compared VLA and WAM methods, and lifts Fast-WAM (Wan2.2-5B) from 38.8% to 47.5%.
+            </p>
+          </div>
+          <div class="columns is-centered" style="align-items:flex-start;">
+            <div class="column has-text-centered">
+              <table class="table is-bordered is-hoverable"
+                style="margin:0 auto; border-collapse:collapse; font-size:0.95rem;">
+                <thead>
+                  <tr style="background:#f5f5f5;">
+                    <th style="text-align:left;">Method</th>
+                    <th style="text-align:center;">PnP</th>
+                    <th style="text-align:center;">Articulated</th>
+                    <th style="text-align:center;">Avg.</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td colspan="4" style="text-align:left;"><i>VLA-based methods</i></td></tr>
+                  <tr><td style="text-align:left;">GR00T-N1.6</td><td>55.4</td><td>24.2</td><td>47.6</td></tr>
+                  <tr><td style="text-align:left;">StarVLA-&alpha;</td><td>58.4</td><td>54.0</td><td>57.3</td></tr>
+                  <tr><td style="text-align:left;">RLDX-1</td><td>59.0</td><td>57.7</td><td>58.7</td></tr>
+                  <tr><td colspan="4" style="text-align:left;"><i>WAM-based methods</i></td></tr>
+                  <tr><td style="text-align:left;">Fast-WAM</td><td>33.8</td><td>53.7</td><td>38.8</td></tr>
+                  <tr><td style="text-align:left;">DiT4DiT</td><td>50.9</td><td>50.3</td><td>50.8</td></tr>
+                  <tr><td style="text-align:left;">Cosmos3</td><td>48.3</td><td>64.3</td><td>52.3</td></tr>
+                  <tr style="background:#eaf2fb;"><td style="text-align:left;"><b>MoGAP (Ours)</b></td><td><b>60.8</b></td><td><b>66.7</b></td><td><b>62.3</b></td></tr>
+                </tbody>
+              </table>
+              <p style="margin-top:0.9rem;">Comparison with state-of-the-art VLAs and WAMs (success rate, %).</p>
+            </div>
+            <div class="column has-text-centered">
+              <table class="table is-bordered is-hoverable"
+                style="margin:0 auto; border-collapse:collapse; font-size:0.95rem;">
+                <thead>
+                  <tr style="background:#f5f5f5;">
+                    <th style="text-align:left;">Method (on Cosmos3)</th>
+                    <th style="text-align:center;">Teacher</th>
+                    <th style="text-align:center;">Avg.</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td style="text-align:left;">Baseline</td><td>&ndash;</td><td>52.3</td></tr>
+                  <tr><td style="text-align:left;">Geometry Forcing</td><td>VGGT</td><td>53.9</td></tr>
+                  <tr><td style="text-align:left;">AGRA</td><td>DINOv2</td><td>55.4</td></tr>
+                  <tr><td style="text-align:left;">TSA</td><td>VideoMAEv2</td><td>56.8</td></tr>
+                  <tr><td style="text-align:left;">VideoREPA</td><td>VideoMAEv2</td><td>57.8</td></tr>
+                  <tr><td style="text-align:left;">VideoREPA</td><td>V-JEPA2.1-L</td><td>59.2</td></tr>
+                  <tr style="background:#eaf2fb;"><td style="text-align:left;"><b>MoGAP (Ours)</b></td><td>&ndash;</td><td><b>62.3</b></td></tr>
+                </tbody>
+              </table>
+              <p style="margin-top:0.9rem;">Comparison to teacher-based supervision (success rate, %).</p>
+            </div>
+          </div>
+
+          <h3 class="title is-4">What MoGAP learns</h3>
+          <div class="content has-text-justified">
+            <p>
+              Latent motion scores localize subtle arm, hand, and object motion. After training with MoGAP, the action
+              tokens attend more strongly to the moving hand and manipulated object, and generated future frames
+              preserve the moving arm more clearly instead of blurring it.
+            </p>
+          </div>
+          <div class="content has-text-centered">
+            <img src="./static/images/analysis.png" alt="Qualitative analysis" width="100%" />
+          </div>
+        </div>
+      </div>
+      <!--/ Results. -->
+
+    </div>
+  </section>
+
+
+  <footer class="footer">
+    <div class="container">
+      <div class="content has-text-centered">
+        <a class="icon-link" href="https://ismty0805.github.io" class="external-link">
+          <i class="fas fa-home"></i>
+        </a>
+      </div>
+      <div class="columns is-centered">
+        <div class="column is-8">
+          <div class="content">
+            <p>
+              This website is licensed under a <a rel="license"
+                href="http://creativecommons.org/licenses/by-sa/4.0/">Creative
+                Commons Attribution-ShareAlike 4.0 International License</a>.
+            </p>
+            <p>
+              This website borrows the <a href="https://github.com/nerfies/nerfies.github.io">source code</a> of the
+              Nerfies project page. We thank the authors for open-sourcing their template.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+</body>
+
+</html>
